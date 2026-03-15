@@ -108,3 +108,17 @@ export const tasksApi = {
   
   getTranscript: (taskId) => request(`/tasks/${taskId}/transcript`),
 }
+
+// Convenience export
+export const api = {
+  ...authApi,
+  ...tasksApi,
+  
+  // OpenAI Settings
+  getOpenAISettings: () => request('/settings/openai'),
+  updateOpenAISettings: (data) => request('/settings/openai', { method: 'PUT', body: data }),
+  
+  // Instagram Settings
+  getInstagramSettings: () => request('/settings/instagram'),
+  updateInstagramSettings: (data) => request('/settings/instagram', { method: 'PUT', body: data }),
+}
