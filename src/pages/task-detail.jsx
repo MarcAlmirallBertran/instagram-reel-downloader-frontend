@@ -47,7 +47,7 @@ const statusConfig = {
 }
 
 export function TaskDetailPage() {
-  const { taskId } = useParams({ from: '/tasks/$taskId' })
+  const { taskId } = useParams({ strict: false })
   const navigate = useNavigate()
   const { data: task, isLoading, error, refetch } = useTask(taskId)
   const cancelTask = useCancelTask()
