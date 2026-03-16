@@ -1,10 +1,26 @@
 import { Link } from '@tanstack/react-router'
 import { Card, CardContent } from './ui/card'
 import { Badge } from './ui/badge'
-import { ExternalLink, Calendar } from 'lucide-react'
+import { Button } from './ui/button'
+import { ExternalLink, Calendar, StopCircle } from 'lucide-react'
 import { statusConfig } from '../lib/status-config'
+import { useCancelTask } from '../hooks/use-tasks'
 
 export function TaskCard({ task }) {
+  const cancelTask = useCancelTask()
+  const isActive = task.status === 'pending' || task.status === 'in_progress' || task.status === 'processing'
+  const canCancel = !task.cancelled && isActive
+
+  const handleCancel = async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (!window.confirm('Are you sure you want to cancel this task?')) return
+    try {
+      await cancelTask.mutateAsync(task.id)
+    } catch {
+      // Error is handled by the mutation
+    }
+  }
   const config = statusConfig[task.status] || statusConfig.pending
   const StatusIcon = config.icon
 
@@ -56,8 +72,19 @@ export function TaskCard({ task }) {
               )}
             </div>
 
-            <div className="flex flex-col items-end gap-1 text-xs text-muted-foreground flex-shrink-0">
-              <div className="flex items-center gap-1">
+            <div className="flex flex-col items-end gap-2 flex-shrink-0">
+              {canCancel && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                  onClick={handleCancel}
+                  disabled={cancelTask.isPending}
+                >
+                  <StopCircle className="h-4 w-4" />
+                </Button>
+              )}
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <Calendar className="h-3 w-3" />
                 {formatDate(task.created_at)}
               </div>

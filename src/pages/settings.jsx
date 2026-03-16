@@ -20,7 +20,7 @@ function OpenAISettingsCard() {
       setApiKey('')
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
-    } catch (err) {
+    } catch {
       // Error handled by mutation
     }
   }
@@ -126,7 +126,7 @@ function InstagramSettingsCard() {
       setPassword('')
       setSaved(true)
       setTimeout(() => setSaved(false), 2000)
-    } catch (err) {
+    } catch {
       // Error handled by mutation
     }
   }

@@ -1,3 +1,5 @@
+import { updateSWToken } from './auth-sw'
+
 const API_BASE = '/api'
 
 function getToken() {
@@ -6,10 +8,12 @@ function getToken() {
 
 export function setToken(token) {
   localStorage.setItem('access_token', token)
+  updateSWToken(token)
 }
 
 export function removeToken() {
   localStorage.removeItem('access_token')
+  updateSWToken(null)
 }
 
 async function request(endpoint, options = {}) {
@@ -106,8 +110,26 @@ export const tasksApi = {
   cancel: (taskId) => request(`/tasks/${taskId}/cancel`, { method: 'POST' }),
   
   getVideoUrl: (taskId) => `${API_BASE}/tasks/${taskId}/video`,
-  
+
   getAudioUrl: (taskId) => `${API_BASE}/tasks/${taskId}/audio`,
+
+  downloadFiles: async (taskId) => {
+    const token = getToken()
+    const response = await fetch(`${API_BASE}/tasks/${taskId}/files`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ message: 'Download failed' }))
+      throw new Error(error.message || 'Download failed')
+    }
+    const blob = await response.blob()
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${taskId}.zip`
+    a.click()
+    URL.revokeObjectURL(url)
+  },
   
   getTranscript: (taskId) => request(`/tasks/${taskId}/transcript`),
 }

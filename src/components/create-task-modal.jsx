@@ -9,13 +9,6 @@ export function CreateTaskModal({ isOpen, onClose, onSubmit, isLoading, error })
   const [validationError, setValidationError] = useState('')
 
   useEffect(() => {
-    if (isOpen) {
-      setUrl('')
-      setValidationError('')
-    }
-  }, [isOpen])
-
-  useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === 'Escape' && isOpen) {
         onClose()
@@ -46,7 +39,7 @@ export function CreateTaskModal({ isOpen, onClose, onSubmit, isLoading, error })
     setValidationError('')
     try {
       await onSubmit(url)
-    } catch (err) {
+    } catch {
       // Error handled by parent
     }
   }

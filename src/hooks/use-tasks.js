@@ -60,7 +60,25 @@ export function useCancelTask() {
 export function useTranscript(taskId, enabled = true) {
   return useQuery({
     queryKey: ['transcript', taskId],
-    queryFn: () => tasksApi.getTranscript(taskId),
     enabled: !!taskId && enabled,
+    queryFn: async () => {
+      const response = await tasksApi.getTranscript(taskId)
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+
+      let result = ""
+      let done = false
+
+      while (!done) {
+        const { value, done: doneReading } = await reader.read()
+        done = doneReading
+        if (value) {
+          result += decoder.decode(value, { stream: true })
+        }
+      }
+
+      return result
+    },
   })
 }

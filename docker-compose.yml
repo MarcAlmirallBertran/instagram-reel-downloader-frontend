@@ -1,0 +1,12 @@
+services:
+  web:
+    build: .
+    ports:
+      - "3000:80"
+    networks:
+      - instagram-reel-downloader
+
+networks:
+  instagram-reel-downloader:
+    name: instagram-reel-downloader
+    external: true

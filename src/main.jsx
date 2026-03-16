@@ -4,6 +4,7 @@ import { RouterProvider } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Toaster } from 'sonner'
 import { router } from './router'
+import { registerAuthSW, updateSWToken } from './lib/auth-sw'
 import './index.css'
 
 const queryClient = new QueryClient({
@@ -13,6 +14,11 @@ const queryClient = new QueryClient({
       retry: 1,
     },
   },
+})
+
+registerAuthSW().then(() => {
+  const token = localStorage.getItem('access_token')
+  if (token) updateSWToken(token)
 })
 
 createRoot(document.getElementById('root')).render(

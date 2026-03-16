@@ -12,12 +12,8 @@ export function DashboardPage() {
   const createTask = useCreateTask()
 
   const handleCreateTask = async (url) => {
-    try {
-      await createTask.mutateAsync(url)
-      setIsModalOpen(false)
-    } catch (err) {
-      throw err
-    }
+    await createTask.mutateAsync(url)
+    setIsModalOpen(false)
   }
 
   if (isLoading) {
@@ -86,6 +82,7 @@ export function DashboardPage() {
       )}
 
       <CreateTaskModal
+        key={+isModalOpen}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleCreateTask}

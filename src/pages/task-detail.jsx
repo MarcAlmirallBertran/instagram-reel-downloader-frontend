@@ -1,5 +1,5 @@
-import { useParams, Link, useNavigate } from '@tanstack/react-router'
-import { useTask, useCancelTask } from '../hooks/use-tasks'
+import { useParams, useNavigate } from '@tanstack/react-router'
+import { useTask, useCancelTask, useTranscript } from '../hooks/use-tasks'
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
 import { Button } from '../components/ui/button'
@@ -13,23 +13,41 @@ import {
   Calendar,
   Clock,
   StopCircle,
-  Download,
-  Ban
+  Ban,
+  Archive
 } from 'lucide-react'
 import { statusConfig } from '../lib/status-config'
+import { tasksApi } from '../lib/api'
+import { useState } from 'react'
+import { Tags } from 'lucide-react'
+import { Languages } from 'lucide-react'
+import { Download } from 'lucide-react'
 
 export function TaskDetailPage() {
   const { taskId } = useParams({ strict: false })
   const navigate = useNavigate()
   const { data: task, isLoading, error, refetch } = useTask(taskId)
+  const { data: transcript } = useTranscript(taskId, task?.status === 'completed' && !!task?.transcript)
   const cancelTask = useCancelTask()
+  const [isDownloading, setIsDownloading] = useState(false)
+
+  const handleDownloadAll = async () => {
+    setIsDownloading(true)
+    try {
+      await tasksApi.downloadFiles(taskId)
+    } catch {
+      // Error is shown via toast if desired; silently fail for now
+    } finally {
+      setIsDownloading(false)
+    }
+  }
 
   const handleCancel = async () => {
     if (!window.confirm('Are you sure you want to cancel this task?')) return
     try {
       await cancelTask.mutateAsync(taskId)
       refetch()
-    } catch (err) {
+    } catch {
       // Error is handled by the mutation
     }
   }
@@ -96,6 +114,12 @@ export function TaskDetailPage() {
           <h1 className="text-2xl font-semibold text-foreground">Task Details</h1>
           <p className="text-sm text-muted-foreground font-mono">#{task.id}</p>
         </div>
+        {task.status === 'completed' && (
+          <Button variant="outline" onClick={handleDownloadAll} disabled={isDownloading}>
+            <Download className="h-4 w-4 mr-2" />
+            {isDownloading ? 'Downloading...' : 'Download'}
+          </Button>
+        )}
         {canCancel ? (
           <Button
             variant="destructive"
@@ -175,20 +199,18 @@ export function TaskDetailPage() {
                 <p className="text-sm text-muted-foreground">{formatDate(task.created_at)}</p>
               </div>
             </div>
-            {task.updated_at && (
-              <div className="flex items-start gap-3">
-                <Clock className="h-4 w-4 text-muted-foreground mt-0.5" />
-                <div>
-                  <p className="text-sm font-medium text-foreground">Last Updated</p>
-                  <p className="text-sm text-muted-foreground">{formatDate(task.updated_at)}</p>
-                </div>
+            <div className="flex items-start gap-3">
+              <Clock className="h-4 w-4 text-muted-foreground mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-foreground">Last Updated</p>
+                <p className="text-sm text-muted-foreground">{formatDate(task.updated_at)}</p>
               </div>
-            )}
+            </div>
           </CardContent>
         </Card>
 
         {/* Video Card */}
-        {task.video_path && (
+        {task.status === 'completed' && task.download && (
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
@@ -197,69 +219,71 @@ export function TaskDetailPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <video 
-                controls 
+              <video
+                controls
                 className="w-full rounded-md bg-black"
-                src={task.video_path}
+                src={tasksApi.getVideoUrl(taskId)}
               >
                 Your browser does not support the video tag.
               </video>
-              <Button variant="outline" className="mt-3 w-full" asChild>
-                <a href={task.video_path} download>
-                  <Download className="h-4 w-4 mr-2" />
-                  Download Video
-                </a>
-              </Button>
             </CardContent>
           </Card>
         )}
-
-        {/* Audio Card */}
-        {task.audio_path && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <FileAudio className="h-4 w-4" />
-                Audio
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <audio 
-                controls 
-                className="w-full"
-                src={task.audio_path}
-              >
-                Your browser does not support the audio element.
-              </audio>
-              <Button variant="outline" className="mt-3 w-full" asChild>
-                <a href={task.audio_path} download>
-                  <Download className="h-4 w-4 mr-2" />
-                  Download Audio
-                </a>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
+        
         {/* Transcription Card */}
-        {task.transcription && (
-          <Card className="lg:col-span-2">
+        {task.status === 'completed' && task.transcript && (
+          <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 Transcription
               </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-4">
+              <div className="flex items-start gap-3">
+                <Languages className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Language</p>
+                  <p className="text-sm text-muted-foreground">{task.transcript.language}</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
+                <Tags className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-foreground">Topics</p>
+                  <p className="text-sm text-muted-foreground">{task.transcript.topics}</p>
+                </div>
+              </div>
               <div className="p-4 rounded-md bg-muted/50 border border-border">
                 <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
-                  {task.transcription}
+                  {transcript}
                 </p>
               </div>
             </CardContent>
           </Card>
         )}
       </div>
+    
+    {/* Audio Card */}
+    {task.status === 'completed' && task.audio && (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <FileAudio className="h-4 w-4" />
+            Audio
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <audio
+            controls
+            className="w-full"
+            src={tasksApi.getAudioUrl(taskId)}
+          >
+            Your browser does not support the audio element.
+          </audio>
+        </CardContent>
+      </Card>
+    )}
     </div>
   )
 }
