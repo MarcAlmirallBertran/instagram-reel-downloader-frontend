@@ -101,7 +101,14 @@ export const authApi = {
 
 // Tasks API
 export const tasksApi = {
-  list: () => request('/tasks'),
+  list: (params = {}) => {
+    const searchParams = new URLSearchParams()
+    if (params.status) searchParams.set('status', params.status)
+    if (params.sortBy) searchParams.set('sort_by', params.sortBy)
+    if (params.sortOrder) searchParams.set('sort_order', params.sortOrder)
+    const qs = searchParams.toString()
+    return request(`/tasks${qs ? `?${qs}` : ''}`)
+  },
   
   create: (uri) => request('/tasks', { method: 'POST', body: { uri } }),
   

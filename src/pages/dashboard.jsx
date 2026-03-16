@@ -3,13 +3,34 @@ import { useTasks, useCreateTask } from '../hooks/use-tasks'
 import { TaskCard } from '../components/task-card'
 import { CreateTaskModal } from '../components/create-task-modal'
 import { Button } from '../components/ui/button'
+import { Select } from '../components/ui/select'
 import { Spinner } from '../components/ui/spinner'
-import { Plus, RefreshCw, Inbox } from 'lucide-react'
+import { Plus, RefreshCw, Inbox, Filter, ArrowUpDown } from 'lucide-react'
+
+const DEFAULT_SORT_BY = 'created_at'
+const DEFAULT_SORT_ORDER = 'desc'
 
 export function DashboardPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const { data: tasks, isLoading, error, refetch, isRefetching } = useTasks()
+  const [statusFilter, setStatusFilter] = useState('')
+  const [sortBy, setSortBy] = useState(DEFAULT_SORT_BY)
+  const [sortOrder, setSortOrder] = useState(DEFAULT_SORT_ORDER)
+
+  const { data: tasks, isLoading, error, refetch, isRefetching } = useTasks({
+    status: statusFilter || undefined,
+    sortBy,
+    sortOrder,
+  })
   const createTask = useCreateTask()
+
+  const hasActiveFilters =
+    statusFilter !== '' || sortBy !== DEFAULT_SORT_BY || sortOrder !== DEFAULT_SORT_ORDER
+
+  const clearFilters = () => {
+    setStatusFilter('')
+    setSortBy(DEFAULT_SORT_BY)
+    setSortOrder(DEFAULT_SORT_ORDER)
+  }
 
   const handleCreateTask = async (url) => {
     await createTask.mutateAsync(url)
@@ -61,11 +82,68 @@ export function DashboardPage() {
         </div>
       </div>
 
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Filter className="h-4 w-4" />
+        </div>
+        <Select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="w-40"
+          aria-label="Filter by status"
+        >
+          <option value="">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="in_progress">In Progress</option>
+          <option value="processing">Processing</option>
+          <option value="completed">Completed</option>
+          <option value="failed">Failed</option>
+          <option value="cancelled">Cancelled</option>
+        </Select>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <ArrowUpDown className="h-4 w-4" />
+        </div>
+        <Select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="w-40"
+          aria-label="Sort by"
+        >
+          <option value="created_at">Created Date</option>
+          <option value="updated_at">Updated Date</option>
+        </Select>
+        <Select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value)}
+          className="w-40"
+          aria-label="Sort order"
+        >
+          <option value="desc">Newest First</option>
+          <option value="asc">Oldest First</option>
+        </Select>
+        {hasActiveFilters && (
+          <Button variant="ghost" size="sm" onClick={clearFilters}>
+            Clear Filters
+          </Button>
+        )}
+      </div>
+
       {tasks && tasks.length > 0 ? (
         <div className="grid gap-4">
           {tasks.map((task) => (
             <TaskCard key={task.id} task={task} />
           ))}
+        </div>
+      ) : hasActiveFilters ? (
+        <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-border rounded-lg bg-card/50">
+          <Filter className="h-12 w-12 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium text-foreground mb-1">No matching tasks</h3>
+          <p className="text-sm text-muted-foreground text-center mb-4">
+            No tasks match the current filters
+          </p>
+          <Button variant="outline" onClick={clearFilters}>
+            Clear Filters
+          </Button>
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-16 px-4 border border-dashed border-border rounded-lg bg-card/50">

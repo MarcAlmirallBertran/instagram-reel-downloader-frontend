@@ -1,14 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { tasksApi } from '../lib/api'
 
-export function useTasks() {
+export function useTasks(filters = {}) {
+  const { status, sortBy = 'created_at', sortOrder = 'desc' } = filters
   return useQuery({
-    queryKey: ['tasks'],
-    queryFn: tasksApi.list,
+    queryKey: ['tasks', { status, sortBy, sortOrder }],
+    queryFn: () => tasksApi.list({ status, sortBy, sortOrder }),
     refetchInterval: (query) => {
       const tasks = query.state.data
       if (!tasks) return false
-      
+
       // Poll every 5 seconds if there are pending or running tasks
       const hasActiveTasks = tasks.some(
         task => task.status === 'pending' || task.status === 'running'

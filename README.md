@@ -53,7 +53,7 @@ src/
     use-auth.js         # current user query + login/logout helpers
     use-tasks.js        # task list query with auto-polling
   pages/
-    dashboard.jsx       # task list + submit new reel URL
+    dashboard.jsx       # task list with filter/sort controls + submit new reel URL
     task-detail.jsx     # status, video/audio player, transcript
     login.jsx
     register.jsx
@@ -117,7 +117,7 @@ Protected routes redirect to `/login` if no valid session is found.
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/tasks` | List all tasks for the current user |
+| `GET` | `/tasks` | List tasks — supports `?status=<status>&sort_by=<field>&sort_order=<asc\|desc>` |
 | `POST` | `/tasks` | Create a task — body: `{ uri: "<reel-url>" }` |
 | `GET` | `/tasks/:id` | Get task details and status |
 | `POST` | `/tasks/:id/cancel` | Cancel a pending/running task |
@@ -128,7 +128,7 @@ Protected routes redirect to `/login` if no valid session is found.
 
 ### Polling
 
-- Task list (`useTasks`): polls every **5 s** while any task has status `pending` or `running`.
+- Task list (`useTasks`): accepts optional `{ status, sortBy, sortOrder }` filters; polls every **5 s** while any task has status `pending` or `running`.
 - Task detail (`useTask`): polls every **3 s** while the individual task is active.
 
 ## API Proxy
