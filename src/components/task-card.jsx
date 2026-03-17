@@ -59,7 +59,7 @@ export function TaskCard({ task }) {
 
               <div className="flex items-center gap-2 text-sm text-foreground">
                 <ExternalLink className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                <span className="truncate">{truncateUrl(task.url)}</span>
+                <span className="truncate">{truncateUrl(`https://www.instagram.com/reels/${task.short_code}/`)}</span>
               </div>
 
               {task.errors?.length > 0 && (

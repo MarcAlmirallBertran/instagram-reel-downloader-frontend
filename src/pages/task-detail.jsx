@@ -183,12 +183,12 @@ export function TaskDetailPage() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground">Instagram URL</p>
                 <a 
-                  href={task.url} 
+                  href={`https://www.instagram.com/reels/${task.short_code}/`}
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-sm hover:underline break-all"
                 >
-                  {task.url}
+                  {`https://www.instagram.com/reels/${task.short_code}/`}
                 </a>
               </div>
             </div>
@@ -210,7 +210,7 @@ export function TaskDetailPage() {
         </Card>
 
         {/* Video Card */}
-        {task.status === 'completed' && task.download && (
+        {task.status === 'completed' && task.video && (
           <Card>
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">

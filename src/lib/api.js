@@ -116,9 +116,11 @@ export const tasksApi = {
   
   cancel: (taskId) => request(`/tasks/${taskId}/cancel`, { method: 'POST' }),
   
-  getVideoUrl: (taskId) => `${API_BASE}/tasks/${taskId}/video`,
+  getVideoUrl: (taskId) => `${API_BASE}/tasks/${taskId}/files/video`,
 
-  getAudioUrl: (taskId) => `${API_BASE}/tasks/${taskId}/audio`,
+  getAudioUrl: (taskId) => `${API_BASE}/tasks/${taskId}/files/audio`,
+  
+  getTranscript: (taskId) => request(`/tasks/${taskId}/files/transcript`),
 
   downloadFiles: async (taskId) => {
     const token = getToken()
@@ -137,8 +139,6 @@ export const tasksApi = {
     a.click()
     URL.revokeObjectURL(url)
   },
-  
-  getTranscript: (taskId) => request(`/tasks/${taskId}/transcript`),
 }
 
 // Convenience export

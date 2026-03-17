@@ -22,7 +22,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url)
 
   // Only intercept API media requests
-  if (!url.pathname.match(/^\/api\/tasks\/[^/]+\/(video|audio)$/)) {
+  if (!url.pathname.match(/^\/api\/tasks\/[^/]+\/files\/(video|audio)$/)) {
     return
   }
   

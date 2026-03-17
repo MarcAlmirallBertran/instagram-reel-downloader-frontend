@@ -12,7 +12,7 @@ export function useTasks(filters = {}) {
 
       // Poll every 5 seconds if there are pending or running tasks
       const hasActiveTasks = tasks.some(
-        task => task.status === 'pending' || task.status === 'running'
+        task => task.status === 'pending' || task.status === 'in_progress' || task.status === 'processing'
       )
       return hasActiveTasks ? 5000 : false
     },
@@ -29,7 +29,7 @@ export function useTask(taskId) {
       if (!task) return false
       
       // Poll every 3 seconds if task is active
-      const isActive = task.status === 'pending' || task.status === 'running'
+      const isActive = task.status === 'pending' || task.status === 'in_progress' || task.status === 'processing'
       return isActive ? 3000 : false
     },
   })
